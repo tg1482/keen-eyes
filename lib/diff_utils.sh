@@ -113,7 +113,7 @@ check_diff_length() {
     local diff_length=${#diff_output}
 
     if [ $diff_length -gt $max_diff_length ] && [ "$force_analysis" = false ]; then
-        echo "Error: Diff is longer than $max_diff_length characters."
+        echo "Error: Diff ($diff_length characters) is longer than $max_diff_length characters."
         echo "To force analysis on this large diff, rerun the script with the -f or --force flag."
         exit 1
     elif [ $diff_length -gt $max_diff_length ]; then
