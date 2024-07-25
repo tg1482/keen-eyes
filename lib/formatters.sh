@@ -46,12 +46,6 @@ format_analysis_output() {
             formatted_output+="## ${title} \n"
             formatted_output+="Importance: ${importance}\n\n"
             
-            # Process content: Add proper list formatting and code blocks
-            # content=$(echo "$content" | sed 's/^[0-9]\+\. /\n&/g')  # Ensure numbers start on new lines
-            # content=$(echo "$content" | sed 's/`\([^`]*\)`/`\1`/g')  # Ensure inline code is properly formatted
-            # content=$(echo "$content" | sed 's/\([a-zA-Z_][a-zA-Z0-9_]*\.py\)/`\1`/g')  # Format .py files as code
-            # content=$(echo "$content" | sed 's/\([a-zA-Z_][a-zA-Z0-9_]*(\)/`\1`/g')  # Format function names as code
-            
             formatted_output+="${content}\n\n"
         fi
     done < <(echo "$cleaned_json" | jq -c 'to_entries[]')
@@ -67,18 +61,9 @@ add_pr_comment() {
 
 # Function to parse and output the analysis
 parse_and_output() {
-    set -x
     local cleaned_json="$1"
     local mode="$2"  # 'pr' or 'terminal'
     local cleaned_json=$(clean_json "$analysis")
-
-    # # Check if the cleaned JSON indicates an error
-    # if [[ $(echo "$cleaned_json" | jq -r '.error // empty') ]]; then
-    #     echo "Error: Failed to parse AI analysis output."
-    #     echo "Raw output:"
-    #     echo "$analysis"
-    #     return
-    # fi
 
     local formatted_output=$(format_analysis_output "$cleaned_json")
 
