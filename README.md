@@ -15,8 +15,6 @@ Keen Eyes is a lightweight, powerful command-line tool that leverages AI to prov
 
 ## Installation
 
-### Manual Installation
-
 1. Clone the repository:
 
    ```
@@ -30,25 +28,24 @@ Keen Eyes is a lightweight, powerful command-line tool that leverages AI to prov
    ./setup.sh
    ```
 
-3. Add the following line to your `.bashrc` or `.zshrc` file:
+   This script will install Keen Eyes in your home directory and create a symlink in `/usr/local/bin`.
 
-   ```
-   export PATH=$PATH:$HOME/.local/bin
-   ```
+3. If the installation is successful, you can use the `keen-eyes` command from anywhere in your terminal.
 
-4. Restart your terminal or run `source ~/.bashrc` (or `~/.zshrc`).
-
-### Homebrew Installation (Coming Soon)
-
-```
-brew tap tg1482/keen-eyes
-brew install keen-eyes
-```
+4. If you see a warning that the command is not found in the PATH, you may need to add `/usr/local/bin` to your PATH or restart your terminal.
 
 ## Usage
 
+After installation, you can use Keen Eyes from anywhere in your terminal:
+
 ```
 keen-eyes [OPTIONS] [COMPARE_TARGET]
+```
+
+For full usage instructions, run:
+
+```
+keen-eyes --help
 ```
 
 ### Options
