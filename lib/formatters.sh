@@ -1,18 +1,20 @@
-#!/bin/bash
-
 # Function to clean and format the JSON
 clean_json() {
     local input="$1"
-    local trimmed=$(echo "$input" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')
-    if [[ "$trimmed" == *'```json'* ]]; then
-        trimmed=$(echo "$trimmed" | sed -n '/```json/,/```/p' | sed '1d;$d')
-    fi
-    if jq -e . >/dev/null 2>&1 <<<"$trimmed"; then
-        echo "$trimmed"
+    local json_content
+
+    # Attempt to isolate JSON content by extracting text between the outermost curly braces
+    json_content=$(echo "$input" | sed -n '/^{/,/^}$/p' | tr '\n' ' ' | sed 's/^{/{\n/' | sed 's/}$/\n}/')
+
+    # Validate the extracted JSON
+    if echo "$json_content" | jq empty >/dev/null 2>&1; then
+        echo "$json_content"
     else
-        echo '{"error": "No valid JSON found in the input"}'
+        echo '{"error": "Invalid JSON structure found in the input"}'
+        return 1
     fi
 }
+
 
 # Function to safely get a value from JSON
 safe_get_json_value() {
@@ -27,11 +29,13 @@ safe_get_json_value() {
     fi
 }
 
+
 # Function to format the analysis output, preserving JSON order
 format_analysis_output() {
     local cleaned_json="$1"
     local formatted_output="# Code Analysis Summary\n\n"
 
+    # Use jq to iterate over the keys in their original order
     while IFS= read -r entry; do
         local section=$(echo "$entry" | jq -r '.key')
         local importance=$(echo "$entry" | jq -r '.value.importance // "low"')
@@ -39,15 +43,18 @@ format_analysis_output() {
 
         if [ "$importance" != "low" ] && [ -n "$content" ]; then
             local title=$(echo "$section" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1')
-            formatted_output+="## ${title}\n"
+            formatted_output+="## ${title} \n"
             formatted_output+="Importance: ${importance}\n\n"
+            
+            # Process content: Add proper list formatting and code blocks
+            # content=$(echo "$content" | sed 's/^[0-9]\+\. /\n&/g')  # Ensure numbers start on new lines
+            # content=$(echo "$content" | sed 's/`\([^`]*\)`/`\1`/g')  # Ensure inline code is properly formatted
+            # content=$(echo "$content" | sed 's/\([a-zA-Z_][a-zA-Z0-9_]*\.py\)/`\1`/g')  # Format .py files as code
+            # content=$(echo "$content" | sed 's/\([a-zA-Z_][a-zA-Z0-9_]*(\)/`\1`/g')  # Format function names as code
+            
             formatted_output+="${content}\n\n"
         fi
     done < <(echo "$cleaned_json" | jq -c 'to_entries[]')
-
-    if [ -z "$(echo -e "$formatted_output" | sed -e '/^$/d' -e '/^# Code Analysis Summary$/d')" ]; then
-        formatted_output+="No high or medium importance items found in the analysis.\n"
-    fi
 
     echo -e "$formatted_output"
 }
@@ -60,19 +67,24 @@ add_pr_comment() {
 
 # Function to parse and output the analysis
 parse_and_output() {
-    local analysis="$1"
+    set -x
+    local cleaned_json="$1"
     local mode="$2"  # 'pr' or 'terminal'
     local cleaned_json=$(clean_json "$analysis")
 
-    # Check if the cleaned JSON indicates an error
-    if [[ $(echo "$cleaned_json" | jq -r '.error // empty') ]]; then
-        echo "Error: Failed to parse AI analysis output."
-        echo "Raw output:"
-        echo "$analysis"
-        return
-    fi
+    # # Check if the cleaned JSON indicates an error
+    # if [[ $(echo "$cleaned_json" | jq -r '.error // empty') ]]; then
+    #     echo "Error: Failed to parse AI analysis output."
+    #     echo "Raw output:"
+    #     echo "$analysis"
+    #     return
+    # fi
 
     local formatted_output=$(format_analysis_output "$cleaned_json")
+
+    if [ -z "$(echo -e "$formatted_output" | sed -e '/^$/d' -e '/^# Code Analysis Summary$/d')" ]; then
+        formatted_output+="No high or medium importance items found in the analysis.\n"
+    fi
 
     if [ "$mode" = "pr" ]; then
         add_pr_comment "$formatted_output"

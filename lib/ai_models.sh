@@ -11,11 +11,21 @@ call_aws() {
             "messages": [
                 {
                     "role": "system",
-                    "content": [{ "type": "text", "text": $system_prompt }]
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": $system_prompt
+                        }
+                    ]
                 },
                 {
                     "role": "user",
-                    "content": [{ "type": "text", "text": $prompt }]
+                    "content": [
+                        {
+                            "type": "text",
+                            "text": $prompt
+                        }
+                    ]
                 }
             ]
         }')
@@ -49,17 +59,26 @@ call_claude() {
             ]
         }')
 
-    echo "$response" | jq -r '.content[0].text' > "$outfile"
-    cat "$outfile"
+    # Extract the content
+    local content=$(echo "$response" | jq -r '.content[0].text')
+
+    # Save the content to the file
+    echo "$content" > "$outfile"
+
+    # read outfile
+    # local content=$(cat "$outfile")
+
+    # Return the content
+    echo "$content"
 }
 
-# Function to call GPT-4 using OpenAI API
+# Function to call GPT-4o using OpenAI API
 call_openai() {
     local response=$(curl -s https://api.openai.com/v1/chat/completions \
         -H "Authorization: Bearer $OPENAI_API_KEY" \
         -H "Content-Type: application/json" \
         -d '{
-            "model": "gpt-4",
+            "model": "gpt-4o",
             "response_format": {"type": "json_object"},
             "messages": [
                 {
@@ -73,8 +92,16 @@ call_openai() {
             ]
         }')
 
-    echo "$response" | jq -r '.choices[0].message.content' > "$outfile"
-    cat "$outfile"
+    # Extract the content
+    local content=$(echo "$response" | jq -r '.choices[0].message.content')
+
+    # Save the content to the file
+    echo "$content" > "$outfile"
+
+    # local content=$(cat "$outfile")
+
+    # Return the content
+    echo "$content"
 }
 
 # Function to call the appropriate AI model
@@ -82,25 +109,28 @@ call_ai_model() {
     local ai_model="$1"
     local prompt="$2"
     local outfile="analysis.json"
+    local analysis
 
     case "$ai_model" in
         openai)
             echo "Using GPT-4 (OpenAI) for analysis..."
-            call_openai
+            analysis=$(call_openai)
             ;;
         aws)
             echo "Using Claude (AWS Bedrock) for analysis..."
-            call_aws
+            analysis=$(call_aws)
             ;;
         claude)
             echo "Using Claude (Anthropic API) for analysis..."
-            call_claude
+            analysis=$(call_claude)
             ;;
         *)
-            echo "Error: Invalid AI model specified."
-            exit 1
+            echo "Error: Invalid AI model specified." >&2
+            return 1
             ;;
     esac
 
-    rm -f "$outfile"
+    echo "$analysis" > "$outfile"
+    echo "$analysis"
 }
+

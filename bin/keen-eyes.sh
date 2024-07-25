@@ -71,6 +71,18 @@ done
 # Validate inputs
 validate_inputs "$AI_MODEL" "$WORKFLOW"
 
+# Check for API keys
+if [ "$AI_MODEL" = "claude" ] && [ -z "$ANTHROPIC_API_KEY" ]; then
+    echo "Error: ANTHROPIC_API_KEY not found. Please set this environment variable."
+    exit 1
+elif [ "$AI_MODEL" = "openai" ] && [ -z "$OPENAI_API_KEY" ]; then
+    echo "Error: OPENAI_API_KEY not found. Please set this environment variable."
+    exit 1
+elif [ "$AI_MODEL" = "aws" ] && { [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; }; then
+    echo "Error: AWS_ACCESS_KEY_ID and/or AWS_SECRET_ACCESS_KEY not found. Please set these environment variables."
+    exit 1
+fi
+
 # Get the diff and changed files
 diff_output=$(get_diff "$COMPARE_TARGET" "$PREV_COMMIT" "$BASE_BRANCH")
 changed_files=$(get_changed_files "$COMPARE_TARGET" "$PREV_COMMIT" "$BASE_BRANCH")
