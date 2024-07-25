@@ -2,7 +2,7 @@
 
 Keen Eyes is a lightweight, powerful command-line tool that leverages AI to provide insightful code reviews. It analyzes your code changes and offers valuable feedback, helping you improve code quality and catch potential issues before they make it to production.
 
-![Keen Eyes Demo](public/keen-eyes.gif)
+![Keen Eyes Demo](./public/keen-eyes.gif)
 
 ## Features
 
