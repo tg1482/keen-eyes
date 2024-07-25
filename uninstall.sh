@@ -1,13 +1,25 @@
 #!/bin/bash
+set -e
 
-# Define the installation directory
-INSTALL_DIR="/usr/local/opt/keen-eyes"
+INSTALL_DIR="$HOME/.keen-eyes"
 BIN_DIR="/usr/local/bin"
 
+echo "Uninstalling Keen Eyes..."
+
 # Remove the symlink
-sudo rm -f "$BIN_DIR/keen-eyes"
+if [ -L "$BIN_DIR/keen-eyes" ]; then
+    if [ -w "$BIN_DIR" ]; then
+        rm "$BIN_DIR/keen-eyes"
+    else
+        sudo rm "$BIN_DIR/keen-eyes"
+    fi
+    echo "Removed symlink from $BIN_DIR/keen-eyes"
+fi
 
 # Remove the installation directory
-sudo rm -rf "$INSTALL_DIR"
+if [ -d "$INSTALL_DIR" ]; then
+    rm -rf "$INSTALL_DIR"
+    echo "Removed installation directory: $INSTALL_DIR"
+fi
 
-echo "Keen Eyes has been uninstalled successfully!"
+echo "Keen Eyes has been uninstalled successfully."
