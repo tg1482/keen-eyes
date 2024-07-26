@@ -10,7 +10,7 @@ get_prompt() {
     local changed_files="$3"
 
     case $workflow in
-        anal)
+        analysis)
             cat << EOF
 Analyze the following code changes and provide a thorough critique. Here's the diff:
 
@@ -122,9 +122,9 @@ validate_inputs() {
     esac
 
     case $workflow in
-        anal|desc|ideas) ;;
+        analysis|describe|ideas) ;;
         *)
-            echo "Error: Invalid workflow specified. Supported workflows are anal, desc, and ideas."
+            echo "Error: Invalid workflow specified. Supported workflows are analysis, describe, and ideas."
             exit 1
             ;;
     esac

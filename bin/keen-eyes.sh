@@ -20,8 +20,8 @@ Options:
   -b, --base BRANCH    Specify the base branch for comparison (default: main)
   -p, --prev           Compare against the previous commit
   -f, --force          Force analysis on large diffs (>15000 characters)
-  -w, --workflow TYPE  Specify the analysis workflow (default: anal)
-                       Supported workflows: anal, desc, ideas
+  -w, --workflow TYPE  Specify the analysis workflow (default: analysis)
+                       Supported workflows: analysis/anal, describe/desc, ideas
   -h, --help           Display this help message
 
 Compare Target:
@@ -46,7 +46,7 @@ FORCE_ANALYSIS=false
 COMPARE_TARGET=""
 BASE_BRANCH="main"
 PREV_COMMIT=false
-WORKFLOW="anal"
+WORKFLOW="analysis"
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
@@ -54,7 +54,17 @@ while [[ "$#" -gt 0 ]]; do
         -b|--base) BASE_BRANCH="$2"; shift 2 ;;
         -p|--prev) PREV_COMMIT=true; shift ;;
         -f|--force) FORCE_ANALYSIS=true; shift ;;
-        -w|--workflow) WORKFLOW="$2"; shift 2 ;;
+        -w|--workflow) 
+            case "$2" in
+                anal|analysis) WORKFLOW="analysis" ;;
+                desc|describe) WORKFLOW="describe" ;;
+                ideas) WORKFLOW="ideas" ;;
+                *)
+                    echo "Error: Invalid workflow type '$2'"
+                    usage
+                    ;;
+            esac
+            shift 2 ;;
         -h|--help) usage ;;
         *) 
             if [ -z "$COMPARE_TARGET" ]; then
