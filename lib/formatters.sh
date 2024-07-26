@@ -1,4 +1,4 @@
-# Function to clean and format the JSON
+# Function to clean and format the JSON or return the full content as a string
 clean_json() {
     local input="$1"
     local json_content
@@ -7,48 +7,58 @@ clean_json() {
     json_content=$(echo "$input" | sed -n '/^{/,/^}$/p' | sed 's/^{/{\n/' | sed 's/}$/\n}/')
 
     # Validate the extracted JSON
-    if echo "$json_content" | jq empty >/dev/null 2>&1; then
+    if [ -n "$json_content" ] && echo "$json_content" | jq empty >/dev/null 2>&1; then 
+        # Valid non-empty JSON found, return it
         echo "$json_content"
     else
-        echo '{"error": "Invalid JSON structure found in the input"}'
-        return 1
+        # No valid JSON found or empty result, return the full input as a string
+        echo "$input"
     fi
 }
 
+# Function to safely process jq output
+safe_jq() {
+    local input="$1"
+    local query="$2"
+    local result
 
-# Function to safely get a value from JSON
-safe_get_json_value() {
-    local json="$1"
-    local key="$2"
-    local default="$3"
-    local value=$(echo "$json" | jq -r ".$key.content // \"$default\"" 2>/dev/null)
-    if [ $? -ne 0 ] || [ "$value" = "null" ]; then
-        echo "$default"
+    result=$(echo "$input" | jq -r "$query" 2>/dev/null)
+    if [ $? -ne 0 ]; then
+        echo "ERROR: jq processing failed"
     else
-        echo "$value"
+        echo "$result"
     fi
 }
 
-
-# Function to format the analysis output, preserving JSON order
+# Function to format the analysis output
 format_analysis_output() {
-    local cleaned_json="$1"
-    local formatted_output="# Code Analysis Summary\n\n"
+    local cleaned_content="$1"
+    local formatted_output=""
 
-    # Use jq to iterate over the keys in their original order
-    while IFS= read -r entry; do
-        local section=$(echo "$entry" | jq -r '.key')
-        local importance=$(echo "$entry" | jq -r '.value.importance // "low"')
-        local content=$(echo "$entry" | jq -r '.value.content // ""')
+    # Check if the content is valid JSON
+    if echo "$cleaned_content" | jq empty >/dev/null 2>&1; then
+        # It's JSON, so parse and format it
+        formatted_output="# Code Analysis Summary\n\n"
+        while IFS= read -r entry; do
+            local section=$(safe_jq "$entry" '.key')
+            local importance=$(safe_jq "$entry" '.value.importance // "low"')
+            local content=$(safe_jq "$entry" '.value.content // ""')
 
-        if [ "$importance" != "low" ] && [ -n "$content" ]; then
-            local title=$(echo "$section" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1')
-            formatted_output+="## ${title} \n"
-            formatted_output+="Importance: ${importance}\n\n"
-            
-            formatted_output+="${content}\n\n"
-        fi
-    done < <(echo "$cleaned_json" | jq -c 'to_entries[]')
+            if [ "$section" = "ERROR: jq processing failed" ] || 
+               [ "$importance" = "ERROR: jq processing failed" ] || 
+               [ "$content" = "ERROR: jq processing failed" ]; then
+                formatted_output+="Error processing JSON entry. Raw entry: $entry\n\n"
+            elif [ "$importance" = "high" ] || [ "$importance" = "medium" ]; then
+                local title=$(echo "$section" | awk '{for(i=1;i<=NF;i++) $i=toupper(substr($i,1,1)) substr($i,2)} 1')
+                formatted_output+="## ${title} \n"
+                formatted_output+="Importance: ${importance}\n\n"
+                formatted_output+="${content}\n\n"
+            fi
+        done < <(echo "$cleaned_content" | jq -c 'to_entries[]' 2>/dev/null || echo '[]')
+    else
+        # It's not JSON, so just return the full content as is
+        formatted_output="$cleaned_content"
+    fi
 
     echo -e "$formatted_output"
 }
@@ -61,15 +71,20 @@ add_pr_comment() {
 
 # Function to parse and output the analysis
 parse_and_output() {
-    local cleaned_json="$1"
+    local analysis="$1"
     local mode="$2"  # 'pr' or 'terminal'
-    local cleaned_json=$(clean_json "$analysis")
-    echo "$cleaned_json"
+    
+    local cleaned_content=$(clean_json "$analysis")
+    local formatted_output=$(format_analysis_output "$cleaned_content")
 
-    local formatted_output=$(format_analysis_output "$cleaned_json")
-
-    if [ -z "$(echo -e "$formatted_output" | sed -e '/^$/d' -e '/^# Code Analysis Summary$/d')" ]; then
-        formatted_output+="No high or medium importance items found in the analysis.\n"
+    if echo "$cleaned_content" | jq empty >/dev/null 2>&1; then
+        # Valid JSON case
+        if [ -z "$(echo -e "$formatted_output" | sed -e '/^$/d' -e '/^# Code Analysis Summary$/d')" ]; then
+            formatted_output+="No high or medium importance items found in the analysis.\n"
+        fi
+    else
+        # Non-JSON case
+        formatted_output="$cleaned_content"
     fi
 
     if [ "$mode" = "pr" ]; then
