@@ -31,7 +31,7 @@ Key instructions:
 - Be thorough and detailed in your analysis.
 - Provide specific examples and line references where applicable.
 - Consider both the immediate impact and potential long-term effects of the changes.
-- Format your response in markdown for readability.
+- Format your response in markdown for readability. If you need to break lines, use "\\n"
 
 Your response should be a JSON object with the following structure:
 {
@@ -63,7 +63,7 @@ Key instructions:
 - Start with a simple explanation and progressively add more technical details.
 - Use clear, concise language that both technical and non-technical team members can understand.
 - Highlight the purpose and context of the changes.
-- Format your response in markdown for readability.
+- Format your response in markdown for readability. If you need to break lines, use "\\n"
 
 Your response should be a JSON object with the following structure:
 {
@@ -94,7 +94,7 @@ Key instructions:
 - Be creative and think beyond the immediate changes.
 - Consider both small optimizations and larger architectural improvements.
 - Provide rationale for your suggestions.
-- Format your response in markdown for readability.
+- Format your response in markdown for readability. If you need to break lines, use "\\n"
 
 Your response should be a JSON object with the following structure:
 {
