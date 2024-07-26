@@ -56,7 +56,7 @@ keen-eyes --help
 - `-b, --base BRANCH`: Specify the base branch for comparison (default: main)
 - `-p, --prev`: Compare against the previous commit
 - `-f, --force`: Force analysis on large diffs (>15000 characters)
-- `-w, --workflow TYPE`: Specify the analysis workflow (analysis, describe, ideas)
+- `-w, --workflow TYPE`: Specify the analysis workflow (analysis: `anal`, describe: `desc`, ideas: `ideas`)
 - `-h, --help`: Display help message
 
 ### Examples
@@ -70,7 +70,7 @@ keen-eyes --help
 2. Compare against develop branch using Claude, with describe workflow:
 
    ```
-   keen-eyes -b develop -w describe
+   keen-eyes -b develop -w desc
    ```
 
 3. Compare against previous commit using Claude, with ideas workflow:
