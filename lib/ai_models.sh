@@ -128,6 +128,8 @@ call_ollama() {
     # Save the content to the file
     echo "$content" > "$outfile"
 
+    # local content=$(cat "$outfile")
+
     # Return the content
     echo "$content"
 }
