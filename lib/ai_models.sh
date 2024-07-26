@@ -104,6 +104,35 @@ call_openai() {
     echo "$content"
 }
 
+call_ollama() {
+    local response=$(curl -s http://localhost:11434/api/chat \
+        -H "Content-Type: application/json" \
+        -d '{
+            "model": "llama3",
+            "stream": false,
+            "messages": [
+                {
+                    "role": "system",
+                    "content": '"$(echo "$system_prompt" | jq -R -s '.')"'
+                },
+                {
+                    "role": "user",
+                    "content": '"$(echo "$prompt" | jq -R -s '.')"'
+                }
+            ]
+        }')
+
+    # Extract the content
+    local content=$(echo "$response" | jq -r '.message.content // .error // empty')
+
+    # Save the content to the file
+    echo "$content" > "$outfile"
+
+    # Return the content
+    echo "$content"
+}
+
+
 # Function to call the appropriate AI model
 call_ai_model() {
     local ai_model="$1"
@@ -124,6 +153,10 @@ call_ai_model() {
             echo "Using Claude (Anthropic API) for analysis..."
             analysis=$(call_claude)
             ;;
+        ollama)
+            echo "Using Ollama for analysis..."
+            analysis=$(call_ollama)
+            ;;
         *)
             echo "Error: Invalid AI model specified." >&2
             return 1
@@ -133,4 +166,3 @@ call_ai_model() {
     echo "$analysis" > "$outfile"
     echo "$analysis"
 }
-

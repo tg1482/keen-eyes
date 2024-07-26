@@ -10,7 +10,7 @@ get_prompt() {
     local changed_files="$3"
 
     case $workflow in
-        analysis)
+        anal)
             cat << EOF
 Analyze the following code changes and provide a thorough critique. Here's the diff:
 
@@ -43,7 +43,7 @@ Your response should be a JSON object with the following structure:
 }
 EOF
             ;;
-        describe)
+        desc)
             cat << EOF
 Provide a detailed description of the following code changes. Here's the diff:
 
@@ -114,17 +114,17 @@ validate_inputs() {
     local workflow="$2"
 
     case $ai_model in
-        claude|openai|aws) ;;
+        claude|openai|aws|ollama) ;;
         *)
-            echo "Error: Invalid AI model specified. Supported models are claude, openai, and aws."
+            echo "Error: Invalid AI model specified. Supported models are claude, openai, aws, and ollama."
             exit 1
             ;;
     esac
 
     case $workflow in
-        analysis|describe|ideas) ;;
+        anal|desc|ideas) ;;
         *)
-            echo "Error: Invalid workflow specified. Supported workflows are analysis, describe, and ideas."
+            echo "Error: Invalid workflow specified. Supported workflows are anal, desc, and ideas."
             exit 1
             ;;
     esac
