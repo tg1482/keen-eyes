@@ -4,7 +4,7 @@ clean_json() {
     local json_content
 
     # Attempt to isolate JSON content by extracting text between the outermost curly braces
-    json_content=$(echo "$input" | sed -n '/^{/,/^}$/p' | tr '\n' ' ' | sed 's/^{/{\n/' | sed 's/}$/\n}/')
+    json_content=$(echo "$input" | sed -n '/^{/,/^}$/p' | sed 's/^{/{\n/' | sed 's/}$/\n}/')
 
     # Validate the extracted JSON
     if echo "$json_content" | jq empty >/dev/null 2>&1; then
@@ -64,6 +64,7 @@ parse_and_output() {
     local cleaned_json="$1"
     local mode="$2"  # 'pr' or 'terminal'
     local cleaned_json=$(clean_json "$analysis")
+    echo "$cleaned_json"
 
     local formatted_output=$(format_analysis_output "$cleaned_json")
 

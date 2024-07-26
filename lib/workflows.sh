@@ -10,7 +10,7 @@ get_prompt() {
     local changed_files="$3"
 
     case $workflow in
-        analysis)
+        anal)
             cat << EOF
 Analyze the following code changes and provide a thorough critique. Here's the diff:
 
@@ -31,7 +31,7 @@ Key instructions:
 - Be thorough and detailed in your analysis.
 - Provide specific examples and line references where applicable.
 - Consider both the immediate impact and potential long-term effects of the changes.
-- Format your response in markdown for readability.
+- Format your response in markdown for readability. If you need to break lines, use "\\n"
 
 Your response should be a JSON object with the following structure:
 {
@@ -43,7 +43,7 @@ Your response should be a JSON object with the following structure:
 }
 EOF
             ;;
-        describe)
+        desc)
             cat << EOF
 Provide a detailed description of the following code changes. Here's the diff:
 
@@ -63,7 +63,7 @@ Key instructions:
 - Start with a simple explanation and progressively add more technical details.
 - Use clear, concise language that both technical and non-technical team members can understand.
 - Highlight the purpose and context of the changes.
-- Format your response in markdown for readability.
+- Format your response in markdown for readability. If you need to break lines, use "\\n"
 
 Your response should be a JSON object with the following structure:
 {
@@ -94,7 +94,7 @@ Key instructions:
 - Be creative and think beyond the immediate changes.
 - Consider both small optimizations and larger architectural improvements.
 - Provide rationale for your suggestions.
-- Format your response in markdown for readability.
+- Format your response in markdown for readability. If you need to break lines, use "\\n"
 
 Your response should be a JSON object with the following structure:
 {
@@ -114,17 +114,17 @@ validate_inputs() {
     local workflow="$2"
 
     case $ai_model in
-        claude|openai|aws) ;;
+        claude|openai|aws|ollama) ;;
         *)
-            echo "Error: Invalid AI model specified. Supported models are claude, openai, and aws."
+            echo "Error: Invalid AI model specified. Supported models are claude, openai, aws, and ollama."
             exit 1
             ;;
     esac
 
     case $workflow in
-        analysis|describe|ideas) ;;
+        anal|desc|ideas) ;;
         *)
-            echo "Error: Invalid workflow specified. Supported workflows are analysis, describe, and ideas."
+            echo "Error: Invalid workflow specified. Supported workflows are anal, desc, and ideas."
             exit 1
             ;;
     esac

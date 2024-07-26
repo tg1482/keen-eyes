@@ -16,12 +16,12 @@ Analyze code changes and provide feedback.
 
 Options:
   -m, --model MODEL    Specify the AI model to use for analysis (default: claude)
-                       Supported models: claude, openai, aws
+                       Supported models: claude, openai, aws, ollama
   -b, --base BRANCH    Specify the base branch for comparison (default: main)
   -p, --prev           Compare against the previous commit
   -f, --force          Force analysis on large diffs (>15000 characters)
-  -w, --workflow TYPE  Specify the analysis workflow (default: analysis)
-                       Supported workflows: analysis, describe, ideas
+  -w, --workflow TYPE  Specify the analysis workflow (default: anal)
+                       Supported workflows: anal, desc, ideas
   -h, --help           Display this help message
 
 Compare Target:
@@ -46,7 +46,7 @@ FORCE_ANALYSIS=false
 COMPARE_TARGET=""
 BASE_BRANCH="main"
 PREV_COMMIT=false
-WORKFLOW="analysis"
+WORKFLOW="anal"
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
