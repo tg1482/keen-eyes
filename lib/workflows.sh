@@ -43,7 +43,7 @@ Your response should be a JSON object with the following structure:
 }
 EOF
             ;;
-        desc)
+        describe)
             cat << EOF
 Provide a detailed description of the following code changes. Here's the diff:
 
